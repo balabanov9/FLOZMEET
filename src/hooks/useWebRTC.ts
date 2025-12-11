@@ -17,27 +17,16 @@ const ICE_SERVERS: RTCConfiguration = {
     // Google STUN servers
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    // Metered TURN servers (free tier)
+    // Свой TURN сервер
     {
-      urls: 'turn:a.relay.metered.ca:80',
-      username: 'e8dd65c92f6ec4c9d3c4bd28',
-      credential: 'uWdWNmkhvyqTmFir',
+      urls: 'turn:64.188.83.189:3478',
+      username: 'flozmeet',
+      credential: 'flozmeet123',
     },
     {
-      urls: 'turn:a.relay.metered.ca:80?transport=tcp',
-      username: 'e8dd65c92f6ec4c9d3c4bd28',
-      credential: 'uWdWNmkhvyqTmFir',
-    },
-    {
-      urls: 'turn:a.relay.metered.ca:443',
-      username: 'e8dd65c92f6ec4c9d3c4bd28',
-      credential: 'uWdWNmkhvyqTmFir',
-    },
-    {
-      urls: 'turn:a.relay.metered.ca:443?transport=tcp',
-      username: 'e8dd65c92f6ec4c9d3c4bd28',
-      credential: 'uWdWNmkhvyqTmFir',
+      urls: 'turn:64.188.83.189:3478?transport=tcp',
+      username: 'flozmeet',
+      credential: 'flozmeet123',
     },
   ],
   iceCandidatePoolSize: 10,
