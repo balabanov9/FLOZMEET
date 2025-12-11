@@ -266,7 +266,21 @@ export function useWebRTC(roomId: string, odId: string, userName: string) {
         updated.set(odId, { id: odId, name, audioEnabled: true, videoEnabled: true });
         return updated;
       });
-      createPeerConnection(odId, socketId);
+      
+      // Создаём peer connection и отправляем offer новому участнику
+      const pc = createPeerConnection(odId, socketId);
+      
+      const offer = await pc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true,
+      });
+      
+      if (offer.sdp) {
+        offer.sdp = preferOpusCodec(offer.sdp);
+      }
+      
+      await pc.setLocalDescription(offer);
+      s.emit('offer', { to: socketId, offer, from: s.id });
     });
 
     s.on('offer', async ({ offer, from }: { offer: RTCSessionDescriptionInit; from: string }) => {
