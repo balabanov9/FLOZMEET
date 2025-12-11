@@ -9,7 +9,7 @@
     "build": "next build",
     "build:server": "tsc --project tsconfig.server.json --outDir dist",
     "start": "next start",
-    "start:server": "node dist/server/index.js",
+    "start:server": "node dist/index.js",
     "lint": "next lint"
   },
   "dependencies": {
