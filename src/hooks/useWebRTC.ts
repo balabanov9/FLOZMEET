@@ -378,16 +378,49 @@ export function useWebRTC(roomId: string, odId: string, userName: string) {
     }
   }, [localStream, roomId, odId]);
 
-  const toggleVideo = useCallback(() => {
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setVideoEnabled(videoTrack.enabled);
-        socket.current.emit('toggle-video', { roomId, odId, enabled: videoTrack.enabled });
+  const toggleVideo = useCallback(async () => {
+    if (!localStream) return;
+    
+    const videoTrack = localStream.getVideoTracks()[0];
+    
+    if (videoEnabled && videoTrack) {
+      // Выключаем камеру - полностью останавливаем трек (LED погаснет)
+      videoTrack.stop();
+      localStream.removeTrack(videoTrack);
+      setVideoEnabled(false);
+      socket.current.emit('toggle-video', { roomId, odId, enabled: false });
+      
+      // Отправляем null трек всем peer connections
+      peerConnections.current.forEach((pc) => {
+        const sender = pc.getSenders().find((s) => s.track?.kind === 'video' || !s.track);
+        if (sender) {
+          sender.replaceTrack(null).catch(console.error);
+        }
+      });
+    } else {
+      // Включаем камеру - получаем новый трек
+      try {
+        const settings = getSettings();
+        const videoConstraints = getVideoConstraints(settings.videoQuality);
+        const newStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        
+        localStream.addTrack(newVideoTrack);
+        setVideoEnabled(true);
+        socket.current.emit('toggle-video', { roomId, odId, enabled: true });
+        
+        // Отправляем новый трек всем peer connections
+        peerConnections.current.forEach((pc) => {
+          const sender = pc.getSenders().find((s) => s.track?.kind === 'video' || !s.track);
+          if (sender) {
+            sender.replaceTrack(newVideoTrack).catch(console.error);
+          }
+        });
+      } catch (error) {
+        console.error('Error enabling video:', error);
       }
     }
-  }, [localStream, roomId, odId]);
+  }, [localStream, videoEnabled, roomId, odId]);
 
   const leaveRoom = useCallback(() => {
     socket.current.emit('leave-room', { roomId, odId });
