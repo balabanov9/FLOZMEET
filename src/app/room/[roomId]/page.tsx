@@ -61,7 +61,6 @@ export default function RoomPage() {
     toggleScreenShare,
     sendChatMessage,
     sendReaction,
-    getConnectionStats,
   } = useWebRTC(roomId, odId, userName);
 
   // Загружаем имя из настроек
