@@ -37,30 +37,12 @@ const ICE_SERVERS: RTCConfiguration = {
 
 // SDP модификация для приоритета Opus codec с высоким битрейтом
 function preferOpusCodec(sdp: string): string {
-  // Устанавливаем высокий битрейт для Opus (Discord использует ~96-128kbps для голоса)
-  let modifiedSdp = sdp;
-  
   // Добавляем параметры Opus для максимального качества
-  modifiedSdp = modifiedSdp.replace(
+  // maxaveragebitrate в битах (128kbps = 128000)
+  return sdp.replace(
     /a=fmtp:111 /g,
-    'a=fmtp:111 maxaveragebitrate=510000;stereo=1;sprop-stereo=1;maxplaybackrate=48000;'
+    'a=fmtp:111 maxaveragebitrate=128000;stereo=1;sprop-stereo=1;'
   );
-  
-  // Увеличиваем bandwidth для аудио
-  if (!modifiedSdp.includes('b=AS:')) {
-    modifiedSdp = modifiedSdp.replace(
-      /m=audio/g,
-      'b=AS:510\r\nm=audio'
-    );
-  }
-  
-  return modifiedSdp;
-}
-
-// Настройка приоритета видео кодеков (VP9 > VP8 > H264)
-function setVideoCodecPreference(sdp: string): string {
-  // VP9 обеспечивает лучшее качество при том же битрейте
-  return sdp;
 }
 
 export function useWebRTC(roomId: string, odId: string, userName: string) {
@@ -252,7 +234,6 @@ export function useWebRTC(roomId: string, odId: string, userName: string) {
         // Модифицируем SDP для лучшего качества аудио
         if (offer.sdp) {
           offer.sdp = preferOpusCodec(offer.sdp);
-          offer.sdp = setVideoCodecPreference(offer.sdp);
         }
         
         await pc.setLocalDescription(offer);
