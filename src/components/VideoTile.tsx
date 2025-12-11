@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Box, Flex, Icon, Text, HStack, Spinner, useColorModeValue } from '@chakra-ui/react';
-import { FiMicOff, FiUser, FiMonitor } from 'react-icons/fi';
+import { FiMicOff, FiUser, FiMonitor, FiMic } from 'react-icons/fi';
 
 interface VideoTileProps {
   stream?: MediaStream | null;
@@ -24,6 +24,60 @@ export default function VideoTile({
 }: VideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Анализ уровня звука
+  useEffect(() => {
+    if (!stream || !audioEnabled || isScreenShare) {
+      setAudioLevel(0);
+      return;
+    }
+
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      setAudioLevel(0);
+      return;
+    }
+
+    try {
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      
+      const checkAudioLevel = () => {
+        if (!analyserRef.current) return;
+        
+        analyserRef.current.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        const level = Math.min(100, average * 2);
+        setAudioLevel(level);
+        
+        requestAnimationFrame(checkAudioLevel);
+      };
+      
+      checkAudioLevel();
+    } catch (e) {
+      console.error('Audio analysis error:', e);
+    }
+
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+        analyserRef.current = null;
+      }
+    };
+  }, [stream, audioEnabled, isScreenShare]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -134,7 +188,26 @@ export default function VideoTile({
       )}
 
       <HStack position="absolute" bottom={3} left={3} bg="blackAlpha.700" px={3} py={1.5} borderRadius="full" spacing={2}>
-        {!audioEnabled && <Icon as={FiMicOff} boxSize={4} color="red.400" />}
+        {!audioEnabled ? (
+          <Icon as={FiMicOff} boxSize={4} color="red.400" />
+        ) : (
+          <Flex align="center" gap={1}>
+            <Icon as={FiMic} boxSize={4} color={audioLevel > 10 ? '#00c853' : 'gray.400'} />
+            {/* Индикатор уровня звука */}
+            <Flex gap="1px" align="flex-end" h="16px">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Box
+                  key={i}
+                  w="3px"
+                  h={`${4 + i * 3}px`}
+                  bg={audioLevel > i * 20 ? '#00c853' : 'gray.600'}
+                  borderRadius="sm"
+                  transition="background 0.1s"
+                />
+              ))}
+            </Flex>
+          </Flex>
+        )}
         <Text fontSize="sm" color="white" fontWeight="medium">{name} {isLocal && '(Вы)'}</Text>
       </HStack>
     </Box>
