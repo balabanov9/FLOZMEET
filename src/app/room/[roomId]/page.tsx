@@ -74,29 +74,9 @@ export default function RoomPage() {
   // Проверяем используемый кодек
   useEffect(() => {
     if (!hasJoined) return;
-    
-    const checkCodec = async () => {
-      try {
-        const stats = await getConnectionStats();
-        // Проверяем кодек в статистике
-        Object.values(stats).forEach((stat: unknown) => {
-          const s = stat as Record<string, unknown>;
-          if (s && s.mimeType && typeof s.mimeType === 'string') {
-            if (s.mimeType.includes('opus')) {
-              setAudioCodec('Opus');
-            }
-          }
-        });
-      } catch (e) {
-        // Если нет соединений, просто показываем Opus (он используется по умолчанию в WebRTC)
-        setAudioCodec('Opus');
-      }
-    };
-    
-    // Проверяем через 3 секунды после подключения
-    const timer = setTimeout(checkCodec, 3000);
-    return () => clearTimeout(timer);
-  }, [hasJoined, getConnectionStats]);
+    // WebRTC использует Opus по умолчанию
+    setAudioCodec('Opus');
+  }, [hasJoined]);
 
   useEffect(() => {
     if (!hasJoined) return;
