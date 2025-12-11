@@ -18,32 +18,32 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-    // Additional STUN servers for reliability
-    { urls: 'stun:stun.stunprotocol.org:3478' },
-    { urls: 'stun:stun.voip.blackberry.com:3478' },
-    // OpenRelay TURN servers (free, for testing)
+    // Metered TURN servers (free tier)
     {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
+      urls: 'turn:a.relay.metered.ca:80',
+      username: 'e8dd65c92f6ec4c9d3c4bd28',
+      credential: 'uWdWNmkhvyqTmFir',
     },
     {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
+      urls: 'turn:a.relay.metered.ca:80?transport=tcp',
+      username: 'e8dd65c92f6ec4c9d3c4bd28',
+      credential: 'uWdWNmkhvyqTmFir',
     },
     {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
+      urls: 'turn:a.relay.metered.ca:443',
+      username: 'e8dd65c92f6ec4c9d3c4bd28',
+      credential: 'uWdWNmkhvyqTmFir',
+    },
+    {
+      urls: 'turn:a.relay.metered.ca:443?transport=tcp',
+      username: 'e8dd65c92f6ec4c9d3c4bd28',
+      credential: 'uWdWNmkhvyqTmFir',
     },
   ],
   iceCandidatePoolSize: 10,
-  bundlePolicy: 'max-bundle',        // Объединяем медиа в один transport
-  rtcpMuxPolicy: 'require',          // Мультиплексирование RTP/RTCP
-  iceTransportPolicy: 'all',         // Используем все доступные транспорты
+  bundlePolicy: 'max-bundle',
+  rtcpMuxPolicy: 'require',
+  iceTransportPolicy: 'all',
 };
 
 // SDP модификация для приоритета Opus codec с высоким битрейтом
